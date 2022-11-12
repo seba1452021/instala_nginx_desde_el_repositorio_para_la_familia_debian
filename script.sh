@@ -22,6 +22,8 @@
  
  codename=$(lsb_release -cs 2>/dev/null)
  
+ if [ "$codename" = "" ]; then echo "ERROR: the codename was not found..." && exit 1; fi
+
  codenames_for_ubuntu_based=$(curl -s https://nginx.org/packages/ubuntu/dists/ | grep '<a' | sed -e 's/"/ /g' -e 's,/,,g' | awk '{print $3}');
  codenames_for_debian_based=$(curl -s https://nginx.org/packages/debian/dists/ | grep '<a' | sed -e 's/"/ /g' -e 's,/,,g' | awk '{print $3}');
  
@@ -31,10 +33,12 @@
  if [ "$distro" = "debian" ]; then for x in $codenames_for_debian_based; do if [ "$identity" = "" ]; then \
  if [ "$codename" = "$x" ]; then identity="$x"; fi; fi; done; fi
  
- if [ "$identity" = "" ]; then echo "ERROR: the code name "$codename" is not available.." && exit 1; fi
+ if [ "$identity" = "" ]; then echo "ERROR: the codename "$codename" is not available.." && exit 1; fi
  
  echo "deb http://nginx.org/packages/${distro} ${codename} nginx" > /etc/apt/sources.list.d/nginx.list
  
  printf "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" > /etc/apt/preferences.d/99nginx
 
  apt update -y
+ 
+ exit 0
